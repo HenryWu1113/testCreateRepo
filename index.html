@@ -1,11 +1,258 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>簡單計算機</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .calculator {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        max-width: 400px;
+        width: 100%;
+      }
+
+      .display {
+        width: 100%;
+        height: 80px;
+        background: rgba(0, 0, 0, 0.3);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        font-size: 2.5rem;
+        text-align: right;
+        padding: 0 20px;
+        margin-bottom: 20px;
+        outline: none;
+        font-family: 'Courier New', monospace;
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+      }
+
+      button {
+        height: 70px;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .btn-number,
+      .btn-decimal {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      .btn-number:hover,
+      .btn-decimal:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-operator {
+        background: rgba(255, 165, 0, 0.8);
+        color: white;
+      }
+
+      .btn-operator:hover {
+        background: rgba(255, 165, 0, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 165, 0, 0.4);
+      }
+
+      .btn-equals {
+        background: rgba(76, 175, 80, 0.8);
+        color: white;
+      }
+
+      .btn-equals:hover {
+        background: rgba(76, 175, 80, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+      }
+
+      .btn-clear {
+        background: rgba(244, 67, 54, 0.8);
+        color: white;
+      }
+
+      .btn-clear:hover {
+        background: rgba(244, 67, 54, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+      }
+
+      .btn-zero {
+        grid-column: span 2;
+      }
+
+      h1 {
+        text-align: center;
+        color: white;
+        margin-bottom: 20px;
+        font-size: 2rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+    </style>
   </head>
   <body>
-    1231239879879879
+    <div class="calculator">
+      <h1>我的計算機</h1>
+      <input type="text" class="display" id="display" readonly />
+      <div class="buttons">
+        <button class="btn-clear" onclick="clearDisplay()">C</button>
+        <button class="btn-clear" onclick="deleteLast()">⌫</button>
+        <button class="btn-operator" onclick="appendToDisplay('/')">÷</button>
+        <button class="btn-operator" onclick="appendToDisplay('*')">×</button>
+
+        <button class="btn-number" onclick="appendToDisplay('7')">7</button>
+        <button class="btn-number" onclick="appendToDisplay('8')">8</button>
+        <button class="btn-number" onclick="appendToDisplay('9')">9</button>
+        <button class="btn-operator" onclick="appendToDisplay('-')">-</button>
+
+        <button class="btn-number" onclick="appendToDisplay('4')">4</button>
+        <button class="btn-number" onclick="appendToDisplay('5')">5</button>
+        <button class="btn-number" onclick="appendToDisplay('6')">6</button>
+        <button class="btn-operator" onclick="appendToDisplay('+')">+</button>
+
+        <button class="btn-number" onclick="appendToDisplay('1')">1</button>
+        <button class="btn-number" onclick="appendToDisplay('2')">2</button>
+        <button class="btn-number" onclick="appendToDisplay('3')">3</button>
+        <button class="btn-equals" onclick="calculate()" rowspan="2">=</button>
+
+        <button class="btn-number btn-zero" onclick="appendToDisplay('0')">
+          0
+        </button>
+        <button class="btn-decimal" onclick="appendToDisplay('.')">.</button>
+      </div>
+    </div>
+
+    <script>
+      let display = document.getElementById('display')
+      let currentInput = ''
+      let operator = ''
+      let previousInput = ''
+      let shouldResetDisplay = false
+
+      function appendToDisplay(value) {
+        if (shouldResetDisplay) {
+          display.value = ''
+          shouldResetDisplay = false
+        }
+
+        if (['+', '-', '*', '/'].includes(value)) {
+          if (currentInput !== '' && operator !== '' && previousInput !== '') {
+            calculate()
+          }
+          previousInput = display.value
+          operator = value
+          currentInput = ''
+          shouldResetDisplay = true
+        } else {
+          if (value === '.' && display.value.includes('.')) {
+            return
+          }
+          display.value += value
+          currentInput = display.value
+        }
+      }
+
+      function clearDisplay() {
+        display.value = ''
+        currentInput = ''
+        operator = ''
+        previousInput = ''
+        shouldResetDisplay = false
+      }
+
+      function deleteLast() {
+        display.value = display.value.slice(0, -1)
+        currentInput = display.value
+      }
+
+      function calculate() {
+        if (previousInput === '' || currentInput === '' || operator === '') {
+          return
+        }
+
+        let prev = parseFloat(previousInput)
+        let current = parseFloat(currentInput)
+        let result
+
+        switch (operator) {
+          case '+':
+            result = prev + current
+            break
+          case '-':
+            result = prev - current
+            break
+          case '*':
+            result = prev * current
+            break
+          case '/':
+            if (current === 0) {
+              alert('錯誤：不能除以零！')
+              return
+            }
+            result = prev / current
+            break
+          default:
+            return
+        }
+
+        display.value = result.toString()
+        currentInput = result.toString()
+        operator = ''
+        previousInput = ''
+        shouldResetDisplay = true
+      }
+
+      // 鍵盤支援
+      document.addEventListener('keydown', function (event) {
+        const key = event.key
+
+        if (key >= '0' && key <= '9') {
+          appendToDisplay(key)
+        } else if (key === '.') {
+          appendToDisplay('.')
+        } else if (['+', '-', '*', '/'].includes(key)) {
+          appendToDisplay(key)
+        } else if (key === 'Enter' || key === '=') {
+          calculate()
+        } else if (key === 'Escape' || key === 'c' || key === 'C') {
+          clearDisplay()
+        } else if (key === 'Backspace') {
+          deleteLast()
+        }
+      })
+    </script>
   </body>
 </html>
